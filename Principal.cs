@@ -15,14 +15,17 @@ namespace Practica1LF_AnalizadorLexico
     public partial class Principal : Form
     {
         String RutaA, RutaG;
-        ArrayList TablaS = new ArrayList();
-        ArrayList TablaE = new ArrayList();
-        ArrayList TablaD = new ArrayList();
-        String[] auxVector = new String[4];
-        String[] auxVectorE = new String[5];
-        String[] auxVectorD = new String[6];
+        ArrayList TablaS = new ArrayList(); //Tokens
+        ArrayList TablaE = new ArrayList(); //Desconocidos
+        ArrayList TablaD = new ArrayList(); //Fechas
+
+        String[] auxVector = new String[4]; //Para Tokens
+        String[] auxVectorE = new String[5]; //Para Caracter Desconocido
+        String[] auxVectorD = new String[6];  //Para Fecha
+
         String[] Reservadas = new String[6] { "Planificador", "Año", "Mes", "Dia", "Descripcion", "Imagen" };
         String[] Otros = new String[3] { "{", "}", ":" };
+
         int id = 0;
         int id2 = 0;
         int Contador = 10;
@@ -108,6 +111,10 @@ namespace Practica1LF_AnalizadorLexico
 
         private void BtnAnalizar_Click(object sender, EventArgs e)
         {
+            TablaS = new ArrayList();
+            TablaE = new ArrayList();
+            TablaD = new ArrayList();
+            MyTreeView.Nodes.Clear();
             long NCaracteres = ActualTxtCodigo.Text.Length;
             int MyByte = 0;
             Boolean Errores = false;
@@ -134,7 +141,7 @@ namespace Practica1LF_AnalizadorLexico
                 }
 
                 //SE VERIFICA SI ES UNA LETRA
-                else if ((MyByte >= 65 && MyByte <= 90) || (MyByte >= 97 && MyByte <= 122) || (MyByte == 241 || MyByte == 209 || MyByte == 92))
+                else if ((MyByte >= 65 && MyByte <= 90) || (MyByte >= 97 && MyByte <= 122) || (MyByte == 241 || MyByte == 209 || MyByte == 92 || MyByte == 46))
                 {
                     auxVector[0] = id.ToString();
                     id++;
@@ -317,8 +324,7 @@ namespace Practica1LF_AnalizadorLexico
                 }
             }
 
-            // SE GENERA LA PLANIFICACION EN EL TREE VIEW SI ES QUE NO HAY ERRORES
-            MyTreeView.Nodes.Clear();
+            // SE GENERA LA PLANIFICACION EN EL TREE VIEW SI ES QUE NO HAY ERRORES           
             int Node = -1;
             if (!Errores)
             {
@@ -413,12 +419,12 @@ namespace Practica1LF_AnalizadorLexico
                                                                                             auxVector3 = (String[])TablaS[a];
                                                                                             if (auxVector3[3].Equals("Reservada Imagen"))
                                                                                             {
+                                                                                                auxString = "";
                                                                                                 //SE ENCUENTRA CADENAS DE RUTA
-                                                                                                for (int d = a + 1; d < TablaS.Count; d++)
+                                                                                                for (int d = a + 2; d < TablaS.Count; d++)
                                                                                                 {
                                                                                                     auxVector3 = (String[])TablaS[d];
-                                                                                                    auxString = "";
-                                                                                                    if (!(auxVector3[3].Equals("Cierra LLave")))
+                                                                                                    if (!(auxVector3[3].Equals("Cierra Llave")))
                                                                                                     {
                                                                                                         auxString = auxString + auxVector3[1];
                                                                                                         auxVectorD[5] = auxString;
@@ -427,7 +433,12 @@ namespace Practica1LF_AnalizadorLexico
                                                                                                     {
                                                                                                         a = d;
                                                                                                         TablaD.Add(auxVectorD);
+                                                                                                        String[] auxVector4 = (String[])TablaD[TablaD.Count-1];
                                                                                                         auxVectorD = new String[6];
+                                                                                                        //SE ESTABLECEN LOS ULTIMOS DATOS DE PLAN, AÑO Y MES
+                                                                                                        auxVectorD[0] = auxVector4[0];
+                                                                                                        auxVectorD[1] = auxVector4[1];
+                                                                                                        auxVectorD[2] = auxVector4[2];
                                                                                                         break;
                                                                                                     }
                                                                                                 }
@@ -487,10 +498,46 @@ namespace Practica1LF_AnalizadorLexico
                 }
             }
 
+            // SE MARCAN LOS DIAS EN EL CALENDARIO
+            Console.WriteLine(TablaD.Count);
+            for (int m=0;m<TablaD.Count;m++)
+            {
+                String[] auxVector3 = (String[])TablaD[m];
+                Console.Write(auxVector3[0] + " ");
+                Console.Write(auxVector3[1]+" ");
+                Console.Write(auxVector3[2]+" ");
+                Console.Write(auxVector3[3]+" ");
+                Console.Write(auxVector3[4] + " ");
+                Console.Write(auxVector3[5] + " ");
+                Console.WriteLine();
+                MyCalendar.AddBoldedDate(new DateTime(Int32.Parse(auxVector3[1]), Int32.Parse(auxVector3[2]),Int32.Parse(auxVector3[3]) ) );
+            }
+            MyCalendar.UpdateBoldedDates();
 
         }
 
-   
+        private void MyCalendar_DateSelected(object sender, DateRangeEventArgs e)
+        {
+            for(int i=0;i<TablaD.Count;i++)
+            {
+                String[] auxVector3 = (String[])TablaD[i];
+                if (Int32.Parse(auxVector3[1])==MyCalendar.SelectionStart.Year && 
+                    Int32.Parse(auxVector3[2]) == MyCalendar.SelectionStart.Month && 
+                    Int32.Parse(auxVector3[3]) == MyCalendar.SelectionStart.Day )
+                {
+                    TxtDetalle.Text = auxVector3[4];
+                    try
+                    {
+                        ImageDetalle.Image = Image.FromFile(auxVector3[5]);
+                    }
+                    catch (FileNotFoundException a)
+                    {
+                        MessageBox.Show("Imagen no encontrada", "Exito", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                        ImageDetalle.Image = Properties.Resources.close;
+                    }
+                }
+            }
+        }
 
         // AUXILAR METHODS
         private TextBox ActualTxtCodigo
