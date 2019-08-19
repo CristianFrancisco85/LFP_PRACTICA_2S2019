@@ -56,6 +56,7 @@
             this.saveFileDialog1 = new System.Windows.Forms.SaveFileDialog();
             this.timer1 = new System.Windows.Forms.Timer(this.components);
             this.saveFileDialog2 = new System.Windows.Forms.SaveFileDialog();
+            this.saveFileDialog3 = new System.Windows.Forms.SaveFileDialog();
             this.panel1.SuspendLayout();
             this.MenuTop.SuspendLayout();
             this.panel2.SuspendLayout();
@@ -145,12 +146,14 @@
             this.manualDeAplicacionToolStripMenuItem.Name = "manualDeAplicacionToolStripMenuItem";
             this.manualDeAplicacionToolStripMenuItem.Size = new System.Drawing.Size(201, 22);
             this.manualDeAplicacionToolStripMenuItem.Text = "Manual de Aplicacion";
+            this.manualDeAplicacionToolStripMenuItem.Click += new System.EventHandler(this.ManualDeAplicacionToolStripMenuItem_Click);
             // 
             // acercaDeToolStripMenuItem
             // 
             this.acercaDeToolStripMenuItem.Name = "acercaDeToolStripMenuItem";
             this.acercaDeToolStripMenuItem.Size = new System.Drawing.Size(201, 22);
             this.acercaDeToolStripMenuItem.Text = "Acerca de ...";
+            this.acercaDeToolStripMenuItem.Click += new System.EventHandler(this.AcercaDeToolStripMenuItem_Click);
             // 
             // panel2
             // 
@@ -181,6 +184,7 @@
             this.MyTreeView.Name = "MyTreeView";
             this.MyTreeView.Size = new System.Drawing.Size(208, 286);
             this.MyTreeView.TabIndex = 3;
+            this.MyTreeView.AfterSelect += new System.Windows.Forms.TreeViewEventHandler(this.MyTreeView_AfterSelect);
             // 
             // MyCalendar
             // 
@@ -230,7 +234,6 @@
             // 
             // ImageDetalle
             // 
-            this.ImageDetalle.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.ImageDetalle.Location = new System.Drawing.Point(25, 25);
             this.ImageDetalle.Name = "ImageDetalle";
             this.ImageDetalle.Size = new System.Drawing.Size(150, 150);
@@ -285,7 +288,7 @@
             // openFileDialog1
             // 
             this.openFileDialog1.FileName = "openFileDialog1";
-            this.openFileDialog1.Filter = "Archivos TXT|*.txt";
+            this.openFileDialog1.Filter = "Archivos Planificador|*.ly";
             this.openFileDialog1.Title = "Cargar Calenderizacion";
             // 
             // saveFileDialog1
@@ -299,6 +302,10 @@
             // saveFileDialog2
             // 
             this.saveFileDialog2.Filter = "Archivo HTML|*.html";
+            // 
+            // saveFileDialog3
+            // 
+            this.saveFileDialog3.Filter = "Archivo HTML|*.html";
             // 
             // Principal
             // 
@@ -314,7 +321,7 @@
             this.Controls.Add(this.TabControl);
             this.Controls.Add(this.panel1);
             this.Font = new System.Drawing.Font("Segoe UI", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
+            this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.None;
             this.MainMenuStrip = this.MenuTop;
             this.Name = "Principal";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
@@ -365,6 +372,7 @@
         private System.Windows.Forms.SaveFileDialog saveFileDialog1;
         private System.Windows.Forms.Timer timer1;
         private System.Windows.Forms.SaveFileDialog saveFileDialog2;
+        private System.Windows.Forms.SaveFileDialog saveFileDialog3;
     }
 }
 

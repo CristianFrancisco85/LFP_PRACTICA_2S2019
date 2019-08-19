@@ -9,12 +9,14 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.Collections;
+using System.Diagnostics;
 
 namespace Practica1LF_AnalizadorLexico
 {
     public partial class Principal : Form
     {
         String RutaA, RutaG;
+
         ArrayList TablaS = new ArrayList(); //Tokens
         ArrayList TablaE = new ArrayList(); //Desconocidos
         ArrayList TablaD = new ArrayList(); //Fechas
@@ -29,6 +31,7 @@ namespace Practica1LF_AnalizadorLexico
         int id = 0;
         int id2 = 0;
         int Contador = 10;
+        Boolean cadena = false;
 
 
         public Principal()
@@ -124,7 +127,7 @@ namespace Practica1LF_AnalizadorLexico
             {
                 MyByte = (int)ActualTxtCodigo.Text[i];
                 // SE VERIFICA SI ES UN CARACTER "OTROS"
-                if (MyByte == 123 || MyByte == 125 || MyByte == 58)
+                if (MyByte == 123 || MyByte == 125 || MyByte == 58 || MyByte == 34)
                 {
                     auxVector[0] = id.ToString();
                     id++;
@@ -136,12 +139,13 @@ namespace Practica1LF_AnalizadorLexico
                         case 123: auxVector[3] = "Abre Llave"; break;
                         case 125: auxVector[3] = "Cierra Llave"; break;
                         case 58: auxVector[3] = "Dos Puntos"; break;
+                        case 34: auxVector[3] = "Comillas Dobles"; cadena = !cadena; break;
                     }
                     TablaS.Add(auxVector);
                 }
 
                 //SE VERIFICA SI ES UNA LETRA
-                else if ((MyByte >= 65 && MyByte <= 90) || (MyByte >= 97 && MyByte <= 122) || (MyByte == 241 || MyByte == 209 || MyByte == 92 || MyByte == 46))
+                else if ((MyByte >= 65 && MyByte <= 90) || (MyByte >= 97 && MyByte <= 122) || (MyByte == 241 || MyByte == 209)||(cadena))
                 {
                     auxVector[0] = id.ToString();
                     id++;
@@ -152,16 +156,22 @@ namespace Practica1LF_AnalizadorLexico
                     for (int j = i + 1; j < NCaracteres; j++)
                     {
                         MyByte = (int)ActualTxtCodigo.Text[j];
+                        if (MyByte == 34)
+                        {
+                            cadena = false;        
+                        }
                         //SE VERIFICA SI ES UNA LETRA O UN NUMERO 
-                        if ((MyByte >= 65 && MyByte <= 90) || (MyByte >= 97 && MyByte <= 122) || (MyByte >= 48 && MyByte <= 57) || (MyByte == 241 || MyByte == 209 || MyByte == 92))
+                        if ((MyByte >= 65 && MyByte <= 90) || (MyByte >= 97 && MyByte <= 122) || (MyByte >= 48 && MyByte <= 57) || (MyByte == 241 || MyByte == 209 || MyByte == 92)||(cadena))
                         {
                             //SE CONCATENAN LO CARACTERES
                             auxVector[1] = auxVector[1] + Char.ToString((char)MyByte);
                         }
                         //SE TERMINO DE LEER UN ID O UNA RESERVADA
+
                         else
                         {
                             i = j - 1;
+                            if (MyByte == 34){cadena = true;}
                             //SE ESTABLECE EL TIPO DE TOKEN
                             if (auxVector[1].Equals(Reservadas[0], StringComparison.OrdinalIgnoreCase))
                             {
@@ -223,16 +233,17 @@ namespace Practica1LF_AnalizadorLexico
                         {
                             i = j - 1;
                             auxVector[3] = "Numero";
+                            TablaS.Add(auxVector);
                             //SE DEJA DE LEER EL SIGUIENTE CARACTER
                             break;
                         }
 
                     }
-                    TablaS.Add(auxVector);
+                    
                 }
 
                 //SINO SE ESTABLECE COMO UN CARACTER DESCONOCIDO
-                else if (MyByte <= 127 && MyByte > 32)
+                else if (MyByte <= 127 && MyByte > 35)
                 {
                     Errores = true;
                     auxVectorE[0] = id2.ToString();
@@ -259,6 +270,7 @@ namespace Practica1LF_AnalizadorLexico
             {
                 FileStream MyStream = new FileStream(saveFileDialog2.FileName, FileMode.Create, FileAccess.Write, FileShare.None);
                 StreamWriter MyWriter = new StreamWriter(MyStream);
+                MyWriter.WriteLine("<font size=\"2\" face=\"Segoe UI Emoji\" >");
                 MyWriter.WriteLine("<h2 style=\"text - align: center; \"><strong>TABLA DE TOKENS</strong></h2>");
                 MyWriter.WriteLine("<table align=\"center\" border=\"1\" cellpadding=\"1\" cellspacing=\"1\" style=\"width: 500px;\">");
                 MyWriter.WriteLine("<thead>");
@@ -281,19 +293,22 @@ namespace Practica1LF_AnalizadorLexico
                     MyWriter.WriteLine("</tr>");
                 }
                 MyWriter.WriteLine("</tbody>");
+                MyWriter.WriteLine("</font>");
                 MyWriter.Close();
                 MyStream.Close();
                 MessageBox.Show("Guardado Correctamente", "Exito", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                Process.Start("chrome.exe", saveFileDialog2.FileName);
             }
 
             // GENERA ARCHIVO HTML DE ERRORES SI ES QUE EXISTE
             if (Errores)
             {
-                saveFileDialog2.Title = "Guardar Tabla de Errores";
-                if (saveFileDialog2.ShowDialog() == DialogResult.OK)
+                saveFileDialog3.Title = "Guardar Tabla de Errores";
+                if (saveFileDialog3.ShowDialog() == DialogResult.OK)
                 {
-                    FileStream MyStream = new FileStream(saveFileDialog2.FileName, FileMode.Create, FileAccess.Write, FileShare.None);
+                    FileStream MyStream = new FileStream(saveFileDialog3.FileName, FileMode.Create, FileAccess.Write, FileShare.None);
                     StreamWriter MyWriter = new StreamWriter(MyStream);
+                    MyWriter.WriteLine("<font size=\"2\" face=\"Segoe UI Emoji\" >");
                     MyWriter.WriteLine("<h2 style=\"text - align: center; \"><strong>TABLA DE ERRORES</strong></h2>");
                     MyWriter.WriteLine("<table align=\"center\" border=\"1\" cellpadding=\"1\" cellspacing=\"1\" style=\"width: 500px;\">");
                     MyWriter.WriteLine("<thead>");
@@ -318,11 +333,13 @@ namespace Practica1LF_AnalizadorLexico
                         MyWriter.WriteLine("</tr>");
                     }
                     MyWriter.WriteLine("</tbody>");
+                    MyWriter.WriteLine("</font>");
                     MyWriter.Close();
                     MyStream.Close();
                     MessageBox.Show("Guardado Correctamente", "Exito", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    Process.Start("chrome.exe", saveFileDialog3.FileName);
                 }
-            }
+            }         
 
             // SE GENERA LA PLANIFICACION EN EL TREE VIEW SI ES QUE NO HAY ERRORES           
             int Node = -1;
@@ -398,19 +415,28 @@ namespace Practica1LF_AnalizadorLexico
                                                                                     {
                                                                                         String auxString = "";
                                                                                         //SE ENCUENTRA CADENAS DE DESCRIPCION
-                                                                                        for (int q = w + 1; q < TablaS.Count; q++)
+                                                                                        for (int q = w + 3; q < TablaS.Count; q++)
                                                                                         {
                                                                                             auxVector3 = (String[])TablaS[q];
                                                                                             if (auxVector3[3].Equals("Identificador"))
                                                                                             {
                                                                                                 auxString = auxString + auxVector3[1];
                                                                                                 auxVectorD[4] = auxString;
-                                                                                            }
-                                                                                            if (auxVector3[3].Equals("Cierra Llave"))
-                                                                                            {
-                                                                                                w = q;
+                                                                                                for (int z = q+1; z < TablaS.Count; z++)
+                                                                                                {
+                                                                                                    if (auxVector3[3].Equals("Comillas Dobles"))
+                                                                                                    {
+                                                                                                        w = z;
+                                                                                                        break;
+                                                                                                    }
+                                                                                                }
                                                                                                 break;
                                                                                             }
+                                                                                            //if (auxVector3[3].Equals("Comillas Dobles"))
+                                                                                            //{
+                                                                                                //w = q;
+                                                                                              //  break;
+                                                                                            //}
 
                                                                                         }                                     
                                                                                         // SE ENCUENTRA IMAGEN
@@ -421,10 +447,10 @@ namespace Practica1LF_AnalizadorLexico
                                                                                             {
                                                                                                 auxString = "";
                                                                                                 //SE ENCUENTRA CADENAS DE RUTA
-                                                                                                for (int d = a + 2; d < TablaS.Count; d++)
+                                                                                                for (int d = a + 3; d < TablaS.Count; d++)
                                                                                                 {
                                                                                                     auxVector3 = (String[])TablaS[d];
-                                                                                                    if (!(auxVector3[3].Equals("Cierra Llave")))
+                                                                                                    if (!(auxVector3[3].Equals("Comillas Dobles")))
                                                                                                     {
                                                                                                         auxString = auxString + auxVector3[1];
                                                                                                         auxVectorD[5] = auxString;
@@ -538,6 +564,46 @@ namespace Practica1LF_AnalizadorLexico
                 }
             }
         }
+
+        private void MyTreeView_AfterSelect(object sender, TreeViewEventArgs e)
+        {
+            if (MyTreeView.SelectedNode.Level == 3)
+            {
+                int[] fecha = new int[3];
+                fecha[0] = Int32.Parse(MyTreeView.SelectedNode.Text);
+                fecha[1] = Int32.Parse(MyTreeView.SelectedNode.Parent.Text);
+                fecha[2] = Int32.Parse(MyTreeView.SelectedNode.Parent.Parent.Text);
+                MyCalendar.SetDate(new DateTime(fecha[2], fecha[1], fecha[0]));
+            }
+            MyCalendar_DateSelected(new Object(), new DateRangeEventArgs(MyCalendar.SelectionStart,MyCalendar.SelectionEnd));
+
+        }
+
+        private void AcercaDeToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            MessageBox.Show("Cristian Francisco Meoño Canel - 201801397", "Acerca de", MessageBoxButtons.OK, MessageBoxIcon.Information);
+        }
+
+        private void ManualDeAplicacionToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                Process Manual = new Process();
+                Manual.StartInfo.WorkingDirectory = Environment.CurrentDirectory;
+                Manual.StartInfo.WindowStyle = ProcessWindowStyle.Maximized;
+                Manual.StartInfo.FileName = "ManualU.pdf";
+                Manual.Start();
+            }
+            catch(Win32Exception)
+            {
+                //DEPURAR ERROR EN APERTURA
+            }
+            catch(FileNotFoundException)
+            {
+                //DEPURAR ERROR EN RUTA
+            }
+        }
+
 
         // AUXILAR METHODS
         private TextBox ActualTxtCodigo
